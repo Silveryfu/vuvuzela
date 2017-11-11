@@ -11,6 +11,11 @@ import time
 
 WAIT_TIME=3
 
+'''
+- This directory has to be put under /davidlazar;
+- Fix the GOPATH if necessary.
+'''
+
 def setup():
     cmd("go get ./...") 
     cmd("go install ./vuvuzela-client ./vuvuzela-entry-server ./vuvuzela-server")
