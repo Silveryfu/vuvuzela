@@ -16,16 +16,16 @@ TTY_NET="/dev/pts/2"
 TTY_ALICE="/dev/pts/17"
 TTY_BOB="/dev/pts/44"
 
+'''
+- This directory has to be put under /davidlazar;
+- Fix the GOPATH if necessary.
+'''
+
 def banana():
     cmd_ignore("./ttyecho -n " + TTY_HISTO + " 'screen -r last'")
     cmd_ignore("./ttyecho -n " + TTY_NET + " 'screen -r net'")
     cmd_ignore("./ttyecho -n " + TTY_ALICE + " 'screen -r alice'")
     cmd_ignore("./ttyecho -n " + TTY_BOB + " 'screen -r bob'")
-
-'''
-- This directory has to be put under /davidlazar;
-- Fix the GOPATH if necessary.
-'''
 
 def setup():
     cmd("go get ./...") 
