@@ -9,27 +9,38 @@ import subprocess
 import argparse
 import time
 
-WAIT_TIME=3
+WAIT_TIME=1
+# Update with the consoles' tty here
+TTY_HISTO="/dev/pts/1"
+TTY_NET="/dev/pts/2"
+TTY_ALICE="/dev/pts/17"
+TTY_BOB="/dev/pts/44"
+
+def banana():
+    cmd_ignore("./ttyecho -n " + TTY_HISTO + " 'screen -r last'")
+    cmd_ignore("./ttyecho -n " + TTY_NET + " 'screen -r net'")
+    cmd_ignore("./ttyecho -n " + TTY_ALICE + " 'screen -r alice'")
+    cmd_ignore("./ttyecho -n " + TTY_BOB + " 'screen -r bob'")
 
 def setup():
     cmd("go get ./...") 
     cmd("go install ./vuvuzela-client ./vuvuzela-entry-server ./vuvuzela-server")
     cmd("cp -r ./confs $GOPATH/bin")
 
-def start():
+def start(conf='confs/'):
     GOPATH=os.environ['GOPATH']
     os.chdir(GOPATH + '/bin')
 
     print("--> starting the last server..")
-    cmd("screen -d -m -S last ./vuvuzela-server -conf confs/local-last.conf")
+    cmd("screen -d -m -S last ./vuvuzela-server -conf " + conf + "local-last.conf")
     time.sleep(WAIT_TIME)
 
     print("--> starting the middle server..")
-    cmd("screen -d -m -S middle ./vuvuzela-server -conf confs/local-middle.conf")
+    cmd("screen -d -m -S middle ./vuvuzela-server -conf " + conf + "local-middle.conf")
     time.sleep(WAIT_TIME)
 
     print("--> starting the first server..")
-    cmd("screen -d -m -S first ./vuvuzela-server -conf confs/local-first.conf")
+    cmd("screen -d -m -S first ./vuvuzela-server -conf " + conf + "local-first.conf")
     time.sleep(WAIT_TIME)
 
     print("--> starting the entry server..")
@@ -37,13 +48,24 @@ def start():
     time.sleep(WAIT_TIME)
 
     print("--> starting the client alice..")
-    cmd("screen -d -m -S alice ./vuvuzela-client -conf confs/alice.conf")
+    cmd("screen -d -m -S alice ./vuvuzela-client -conf " + conf + "alice.conf")
 
+    print("--> starting the client bob..")
+    cmd("screen -d -m -S bob ./vuvuzela-client -conf " + conf + "bob.conf")
+
+    cmd("screen -d -m -S net speedometer -r lo")
     print(cmd_out("screen -list"))
     print("Done")
 
+def start_zero():
+    start('confs-zero/')
+
+def start_little():
+    start('confs-little/')
+
 def kill():
     cmd("pkill screen")
+    print("Done")
 
 def cmd(cmd, quiet=False):
     if quiet:
@@ -70,6 +92,11 @@ def cmd_out(cmd):
 
     return out
 
+def cmd_ignore(cmd, quiet=False):
+    if quiet:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    else:
+        proc = subprocess.Popen(cmd, shell=True)
 
 def print_usage(parser):
     parser.print_help(file=sys.stderr)
@@ -80,6 +107,9 @@ def main():
     cmds = {
             'setup': setup,
             'start': start,
+            'start-zero': start_zero,
+            'start-little': start_little,
+            'banana': banana,
             'kill' : kill,
             'help': lambda: print_usage(parser),
             }
